@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket Test Page</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  </head>
+
+  <body>
+    <h1>Copilot Playground</h1>
+    <textarea id="textarea" style="width: 100%; height: 400px"></textarea>
+    <br />
+    <br />
+    <button id="startBtn">Start Session</button>
+    <br />
+    <br />
+    <input
+      id="promptInput"
+      type="text"
+      placeholder="Enter prompt"
+      style="width: 80%"
+    />
+    <button id="sendMsgBtn">Send Message</button>
+    <script>
+      // Connect to socket server (note: extraHeaders only works in Node, not browser)
+      const socket = io("http://localhost:4000", {
+        auth: {
+          token:
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjAzODU0MzQtNTQyMi00OGQ1LWJkYzgtMTY0NDQyZjQ1MDUxIiwiZ29vZ2xlX2lkIjoiMTE3MTMzOTkyMDA4MTI5NzE0NTY3IiwiZW1haWwiOiJvbWFnYWR2ZEBnbWFpbC5jb20iLCJmaXJzdF9uYW1lIjoiT21hZ2EiLCJsYXN0X25hbWUiOiJEYXZpZCIsInByb2ZpbGVfcGljIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSWtsVklhcnJ0VWl0Sy1uV1NHakNBWXB2eDVaWTZOUFdZMjd2UW1DUnNpd1BCSVRBPXM5Ni1jIiwidGltZV9hZGRlZCI6MTc1NjU4NDk0MzIwOSwiX2lkIjoiNjhiMzViZWZmZTczNGI0OWI5ODM3NmQ2IiwiaWF0IjoxNzU2NTg0OTQzLCJleHAiOjE3NTkxNzY5NDN9.JM8dDMFQy32GAlBYzJjg6df7TWWB5t5ISGtgk6LwZyc", // can be JWT or any access token
+        },
+      });
+
+      let sessionId = null;
+
+      // Helper to append and pretty-print JSON/event data in the textarea
+      function appendEventToTextarea(event, data) {
+        const textarea = document.getElementById("textarea");
+        let formatted = "";
+        try {
+          formatted = JSON.stringify(data, null, 2);
+        } catch (e) {
+          formatted = String(data);
+        }
+        textarea.value += `\n[${event}]\n${formatted}\n\n`;
+        textarea.scrollTop = textarea.scrollHeight;
+      }
+
+      // Listen to all required events
+      const events = [
+        "message",
+        "connect_error",
+        "error",
+        "recommendation",
+        "chain",
+        "conversation-history",
+        "wallet",
+      ];
+      events.forEach((event) => {
+        socket.on(event, (data) => {
+          console.log(event, data);
+          if(event != 'message'){
+            appendEventToTextarea(event, data);
+          }
+          if (event === "connection" && data.sessionId) {
+            sessionId = data.sessionId;
+          }
+          if (event === "message" && data.sessionId) {
+            sessionId = data.sessionId;
+          }
+          if (event == 'message') {
+            const img = document.createElement("img");
+
+            // Set image attributes
+            img.src = data; // replace with your image URL
+            img.alt = "Dynamic Image";
+            img.style.width = "550px";
+            img.style.height = "auto";
+
+            // Append to body
+            document.body.appendChild(img);
+          }
+        });
+      });
+
+      // Start session on button click
+      document.getElementById("startBtn").onclick = function () {
+        socket.emit("start");
+        appendEventToTextarea("info", { message: "[start] emitted" });
+      };
+
+      // Send message on button click
+      document.getElementById("sendMsgBtn").onclick = function () {
+        // const prompt = document.getElementById("promptInput").value;
+        // if (!sessionId) {
+        //   alert("No sessionId yet. Start session first.");
+        //   return;
+        // }
+        socket.emit("message", {
+          chat_id: "60385434-5422-48d5-bdc8-164442f45051",
+          text: "remove the bags",
+          images: [
+            // {
+            //   pexai_id: "pxls@33722971",
+            //   origin: "pexels",
+            //   thumbnail: "https://images.pexels.com/photos/33722971/pexels-photo-33722971.jpeg?auto=compress&cs=tinysrgb&h=130",
+            //   url: "https://images.pexels.com/photos/33722971/pexels-photo-33722971.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+            // },
+          ],
+        });
+        console.log("message emited");
+        // appendEventToTextarea("info", {
+        //   message: "[message] emitted",
+        //   sessionId,
+        //   prompt,
+        // });
+      };
+    </script>
+  </body>
+</html>
