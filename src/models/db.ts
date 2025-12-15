@@ -18,7 +18,6 @@ interface DbConnector {
 
 const db_secret = process.env.MONGO_DB || "mongodb://localhost:27017/truecasts";
 
-// const db_secret = process.env.MONGO_DB || "mongodb+srv://omaga:omagadvd12@pexaicluster.q2ipdab.mongodb.net/?retryWrites=true&w=majority&appName=pexaiCluster";
 
 const dbConnector: DbConnector = {
   connectToDb: (cb) => {
