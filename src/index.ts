@@ -2,18 +2,18 @@ import app from "./server";
 import dbConnector from "./models/db";
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io";
+// import { Server } from "socket.io";
 // import { allSockets } from "./sockets/sockets";
 
 const connectDb = dbConnector.connectToDb;
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: "*", // Allow requests from React app
-    methods: ["GET", "POST"],
-  },
-});
+// const io = new Server(httpServer, {
+//   cors: {
+//     origin: "*", // Allow requests from React app
+//     methods: ["GET", "POST"],
+//   },
+// });
 
 connectDb((err) => {
   if (!err) {
@@ -23,7 +23,7 @@ connectDb((err) => {
     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
     const host = "0.0.0.0";
 
-    httpServer.listen(port, host, () => {
+    app.listen(port, host, () => {
       console.log(`Server running on ${host}:${port}`);
       // allSockets(io);
     });
@@ -32,4 +32,4 @@ connectDb((err) => {
   }
 });
 
-export { io };
+
