@@ -15,22 +15,27 @@ import { AuthRequest } from "../../types";
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.REDIRECT_URI,
 );
 
 const googleAuthController = (req: Request, res: Response) => {
+  const redirectUri = req.query.redirect_uri as string;
   const authUrl = client.generateAuthUrl({
     scope: ["profile", "email"],
     prompt: "consent",
+    redirect_uri: redirectUri,
   });
   res.json({ url: authUrl });
 };
 
 const signInController = async (req: Request, res: Response) => {
   const db = getDb();
-  const code = req.query.code;
+  const code = req.query.code as string;
+  const redirectUri = req.query.redirect_uri as string;
   const { data: clientData, error: clientError } = await tryCatch(
-    client.getToken(String(code)),
+    client.getToken({
+      code,
+      redirect_uri: redirectUri,
+    }),
   );
   if (clientError) {
     return res.status(500).send(clientError.message);
